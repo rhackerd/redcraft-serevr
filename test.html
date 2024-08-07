@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Web Server</title>
+</head>
+<body>
+    <div></div>
+
+    <script>
+        let previousResponse = '';
+
+        async function checkForUpdates() {
+            try {
+                const response = await fetch('/log');
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const currentResponse = await response.text();
+                if (currentResponse !== previousResponse) {
+                    console.log('Response changed');
+                    document.body.innerHTML += currentResponse;
+                    previousResponse = currentResponse;
+                }
+            } catch (error) {
+                console.error('There was a problem with the fetch operation:', error);
+            }
+        }
+
+        // Check for updates every 1 millisecond
+        setInterval(checkForUpdates, 1);
+    </script>
+</body>
+</html>
