@@ -1,4 +1,7 @@
 from src.logger import plugin
+import os
+import config as cfg
+
 
 class Ex:
     def __init__(self, plugin_name):
@@ -53,3 +56,25 @@ class Ex:
     def step(self) -> None:
         """Calls every step in main loop"""
         pass
+
+    def generateFolder(self) -> None:
+        """If not generated already it will generate folder for the plugin in plugins folder"""
+        if not os.path.exists("plugins/" + self.plugin_name):
+            os.mkdir("plugins/" + self.plugin_name)
+        else:
+            return None
+
+    def generateConfig(self, config_name="") -> None:
+        """If not generated already it will generate config file for the plugin in plugins folder"""
+        if config_name == "":
+            config_name = self.plugin_name
+        # check if plugin folder already exists
+        self.generateFolder()
+
+        if not os.path.exists("plugins/" + self.plugin_name + "/" + config_name + ".cfg"):
+            with open("plugins/" + self.plugin_name + "/" + config_name + ".cfg", "w") as f:
+                f.write("")
+        else:
+            return None
+
+    

@@ -8,6 +8,7 @@ from src.constants import PING, LOAD, UNLOAD, GAME_VERSION, SERVER_VERSION, GAME
 class Server:
     def __init__(self):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.socket.bind((IP, PORT))
         self.socket.listen(5)
         self.client_threads = []

@@ -1,4 +1,4 @@
-PORT = 25565
+PORT = 25566
 IP = "localhost" # localhost 
 MOTD = "Welcome to redcraft server"
 MAX_PLAYERS = 20
