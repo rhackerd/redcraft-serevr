@@ -27,7 +27,7 @@ class Commands:
         return 0;
 
     def setServerCommands(self, arg):
-        info(arg)
+        pass
 
     def setClientCommands(self, arg):
-        info(arg)
+        pass

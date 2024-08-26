@@ -33,7 +33,7 @@ class Mod_sys:
         info(f"Loaded plugin {module_name}")
 
     def configManager(self):
-        print(self.plugins)
+        pass
 
     def step(self):
         for i in self.plugins:
@@ -54,3 +54,12 @@ class Mod_sys:
                 error(f"plugin {i} doesnt have Plugin class, and cant be loaded.")
 
 
+    def shutdown(self):
+        info("Unloading all plugins...")
+        for plugin in self.plugins:
+            try:
+                plugin.onUnload()
+                info(f"Unloaded plugin {plugin.plugin_name}")
+            except Exception as e:
+                error(f"Failed to unload plugin {plugin.plugin_name}: {e}")
+        info("All plugins unloaded.")

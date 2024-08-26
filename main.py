@@ -1,10 +1,12 @@
+import threading
+import sys
+import signal
+import time  # Add this for loop delays
 from src.server import Server
 from src.console import Console
-import threading
 from src.mod_sys import Mod_sys
 from settings import PORT, IP, MOTD, MAX_PLAYERS, MAX_PLAYERS_PER_IP, MAX_PLAYERS_PER_NAME, MAX_PLAYERS_PER_UUID, MAX_PACKETS_PER_TICK
 from src.commands import Commands
-import sys
 import src.logger
 
 class MainApp:
@@ -15,12 +17,13 @@ class MainApp:
         self.plugins = []
         self.broken_plugins = []
         self.commands = Commands()
+        self.stop_event = threading.Event()  # Event to signal threads to stop
 
     def start(self):
         src.logger.info("Starting server...")
-        src.logger.info("checking plugins")
+        src.logger.info("Checking plugins")
         self.mod_sys.check_all_plugins()
-        src.logger.info("we recommend using web plugin for now, console is a little bit broken")
+        src.logger.info("We recommend using the web plugin for now, console is a little bit broken")
         self.load_all_plugins()
         for p in self.mod_sys.plugins:
             self.plugins.append(p.plugin_name)
@@ -32,7 +35,7 @@ class MainApp:
         self.server.start()
         src.logger.info("Server started and listening on port 8080")
 
-        # Start console loop in a separate thread
+        # Start console and plugin loop in separate threads
         self.console.do_plugins = self.show_plugins
 
         plugin_thread = threading.Thread(target=self.plugin_loop)
@@ -44,18 +47,26 @@ class MainApp:
         src.logger.info("Console listener started")
 
         try:
-            while True:
+            while not self.stop_event.is_set():
                 self.server.step()
+                time.sleep(0.1)  # Add small sleep to reduce CPU usage and allow responsive exit
         except KeyboardInterrupt:
             pass
         finally:
-            self.server.close()
-            src.logger.info("Shutting down server...")
-            for x in self.mod_sys.plugins:
-                x.onUnload()
-            plugin_thread.join()
-            console_thread.join()
-            sys.exit(0)
+            src.logger.info("Shutting down the server.")
+            self.mod_sys.shutdown()
+            self.shutdown()
+            src.logger.info("Server shutdown complete.")
+            src.logger.info("!!!! &<red>&ltype exit to fully shutdown server &<white>&l!!!!")
+
+    def shutdown(self):
+        self.stop_event.set()  # Signal all threads to stop
+        self.server.close()
+
+        # Give threads a chance to finish
+        time.sleep(1)
+
+        src.logger.info("Waiting for thread to finish...")
 
     def show_plugins(self, arg):
         src.logger.info("Plugins:")
@@ -64,19 +75,21 @@ class MainApp:
         for p in self.broken_plugins:
             src.logger.info(f"- &<red>&l{p}&r")
 
-
     def load_all_plugins(self):
         self.mod_sys.load_all_plugins()
 
     def console_loop(self):
-        self.console.cmdloop()
+        while not self.stop_event.is_set():
+            self.console.cmdloop()
+            time.sleep(0.1)  # Allow loop to exit promptly
 
     def plugin_loop(self):
         try:
-            while True:
+            while not self.stop_event.is_set():
                 self.mod_sys.step()
                 for i in self.mod_sys.plugins:
                     i.last_message = src.logger.last_log
+                time.sleep(0.1)  # Allow loop to exit promptly
         except KeyboardInterrupt:
             pass
 
@@ -84,6 +97,10 @@ class MainApp:
         src.logger.info("Exit command received. Closing server...")
         self.server.close()
 
+def signal_handler(sig, frame):
+    app.shutdown()
+
 if __name__ == "__main__":
+    signal.signal(signal.SIGINT, signal_handler)  # Handle Ctrl+C gracefully
     app = MainApp()
     app.start()
