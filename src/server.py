@@ -2,7 +2,7 @@ import socket
 import threading
 from src.logger import info, error
 from settings import PORT, IP, MOTD, SERVER_NAME
-from src.constants import PING, LOAD, GAME_COMMANDS, CHECK_GAME
+from src.constants import PING, LOAD, GAME_COMMANDS, CHECK_GAME, GET_AREA
 
 class Server:
     def __init__(self):
@@ -49,7 +49,11 @@ class Server:
                     info(f"Received command: {command}")
                 elif event_type == CHECK_GAME:
                     # game checks every 10s localhosts this is used to detect if it the localhost (this server) is designed for this server
-                    self._send_data(client, f"rc".encode())
+                    self._send_data(client, f"rc".encode()) 
+                elif event_type == GET_AREA:
+                    x = self._receive_data(client, 4)
+                    y = self._receive_data(client, 4)
+                    self._send_data(client, f"{x},{y}".encode())
                 else:
                     info(f"Received unknown event: {event_type}")
         except Exception as e:

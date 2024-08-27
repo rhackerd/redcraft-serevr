@@ -8,6 +8,7 @@ from src.mod_sys import Mod_sys
 from settings import PORT, IP, MOTD, MAX_PLAYERS, MAX_PLAYERS_PER_IP, MAX_PLAYERS_PER_NAME, MAX_PLAYERS_PER_UUID, MAX_PACKETS_PER_TICK
 from src.commands import Commands
 import src.logger
+from src.perlinNoise import PerlinNoiseVisualizer
 
 class MainApp:
     def __init__(self):
@@ -18,6 +19,7 @@ class MainApp:
         self.broken_plugins = []
         self.commands = Commands()
         self.stop_event = threading.Event()  # Event to signal threads to stop
+        self.world = PerlinNoiseVisualizer()  
 
     def start(self):
         src.logger.info("Starting server...")
