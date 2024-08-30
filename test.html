@@ -4,11 +4,15 @@
     <title>Simple Web Server</title>
 </head>
 <body>
-    <div></div>
+    <div id="response"></div>
 
     <script>
         let previousResponse = '';
+        let element = document.getElementById("response");
 
+        function addText(text) {
+            element.innerHTML += "<p>"+text+"</p>";
+        }
         async function checkForUpdates() {
             try {
                 const response = await fetch('/log');
@@ -18,7 +22,7 @@
                 const currentResponse = await response.text();
                 if (currentResponse !== previousResponse) {
                     console.log('Response changed');
-                    document.body.innerHTML += currentResponse;
+                    addText(currentResponse);
                     previousResponse = currentResponse;
                 }
             } catch (error) {
@@ -27,7 +31,20 @@
         }
 
         // Check for updates every 1 millisecond
-        setInterval(checkForUpdates, 1);
+        setInterval(checkForUpdates, 10);
     </script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: teal;
+        }
+        #response {
+            white-space: pre-wrap; /* Preserve whitespace and newlines */
+        }
+
+        #response div {
+            display:inline;
+        }
+    </style>
 </body>
 </html>

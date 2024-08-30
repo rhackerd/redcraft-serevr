@@ -1,11 +1,11 @@
-PORT = None
+PORT = 25566
 IP = "localhost"
-MOTD = "None"
-MAX_PLAYERS = None
+MOTD = "testing for terrain for my client"
+MAX_PLAYERS = 20
 MAX_PLAYERS_PER_IP = 1
 MAX_PLAYERS_PER_NAME = 1
 MAX_PLAYERS_PER_UUID = 1
 MAX_PACKETS_PER_TICK = 20
-SERVER_NAME = "None"
+SERVER_NAME = "terrain-test"
 SERVER_VERSION = '1.0.0'
-GAME_VERSION = 'None'
+GAME_VERSION = '0.6.8'

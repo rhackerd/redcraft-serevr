@@ -2,10 +2,11 @@ import socket
 import threading
 from src.logger import info, error
 from settings import PORT, IP, MOTD, SERVER_NAME
-from src.constants import PING, LOAD, GAME_COMMANDS, CHECK_GAME, GET_AREA
+from src.constants import PING, LOAD, GAME_COMMANDS, CHECK_GAME, GET_AREA, UNLOAD
 
 class Server:
-    def __init__(self):
+    def __init__(self, world):
+        self.world = world
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.socket.bind((IP, PORT))
@@ -44,6 +45,9 @@ class Server:
                     player_name = self._receive_data(client, 1024).decode().strip()
                     self._send_data(client, f"Welcome to the server {player_name}!".encode())
                     info(f"Player {player_name} joined")
+                elif event_type == UNLOAD:
+                    player_name = self._receive_data(client, 1024).decode().strip()
+                    info(f"Player {player_name} disconnected")
                 elif event_type == GAME_COMMANDS:
                     command = self._receive_data(client, 1024).decode().strip()
                     info(f"Received command: {command}")
@@ -51,9 +55,25 @@ class Server:
                     # game checks every 10s localhosts this is used to detect if it the localhost (this server) is designed for this server
                     self._send_data(client, f"rc".encode()) 
                 elif event_type == GET_AREA:
-                    x = self._receive_data(client, 4)
-                    y = self._receive_data(client, 4)
-                    self._send_data(client, f"{x},{y}".encode())
+                    area_size = 16
+                    
+                    # Receive the x and y coordinates from the client
+                    x = self._receive_data(client, 4)  # Receiving as bytes
+                    y = self._receive_data(client, 4)  # Receiving as bytes
+                    
+                    # Convert received bytes to integers
+                    x = int.from_bytes(x, byteorder='big')  # Adjust byte order if necessary
+                    y = int.from_bytes(y, byteorder='big')  # Adjust byte order if necessary
+                    
+                    # Retrieve the section of the world based on the received coordinates
+                    section = self.world.get_section(x, y, area_size)
+                    
+                    # Send the section data back to the client
+                    for row in section:
+                        for value in row:
+                            self._send_data(client, value.to_bytes(4, byteorder='big'))
+
+
                 else:
                     info(f"Received unknown event: {event_type}")
         except Exception as e:

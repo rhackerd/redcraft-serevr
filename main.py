@@ -12,14 +12,14 @@ from src.perlinNoise import PerlinNoiseVisualizer
 
 class MainApp:
     def __init__(self):
-        self.server = Server()
+        self.world = PerlinNoiseVisualizer() 
+        self.server = Server(self.world)
         self.console = Console()
         self.mod_sys = Mod_sys()
         self.plugins = []
         self.broken_plugins = []
         self.commands = Commands()
-        self.stop_event = threading.Event()  # Event to signal threads to stop
-        self.world = PerlinNoiseVisualizer()  
+        self.stop_event = threading.Event()  # Event to signal threads to stop 
 
     def start(self):
         src.logger.info("Starting server...")
